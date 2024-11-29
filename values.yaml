@@ -1,0 +1,15 @@
+volumes:
+  - name: creds
+    secret:  
+      secretName: kepimetheus
+
+volumeMounts:
+  - name: creds
+    mountPath: "/root/.aws/credentials"
+    subPath: credentials
+
+provider:
+  name: awsBedrock
+  secret:
+    create: false
+    name: kepimetheus
