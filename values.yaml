@@ -1,0 +1,21 @@
+volumes:
+  - name: creds
+    secret:  
+      secretName: kepimetheus
+
+volumeMounts:
+  - name: creds
+    mountPath: "/root/.aws/credentials"
+    subPath: credentials
+
+provider:
+  name: awsBedrock
+  secret:
+    create: false
+    name: kepimetheus
+
+kube-prometheus-stack:
+  enabled: true
+  grafana:
+    plugins:
+      - https://kepimetheus.s3.us-east-1.amazonaws.com/kepimetheus-1.0.0.zip;kepimetheus
