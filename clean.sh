@@ -26,13 +26,23 @@ delete_service() {
 # Criar policy, user e credenciais
 delete_aws_resources() {
     local service=$1
+
+    access_keys=("$(aws iam list-access-keys --user-name $service | jq -r '.AccessKeyMetadata[] | .AccessKeyId')")
+    if [[ "${#access_keys}" -gt "0" ]]; then
+        for access_key in ${access_keys[@]}; do
+            log -e "Deleting access key $access_key"
+            aws iam delete-access-key --user-name $service --access-key-id $access_key
+        done
+    fi
+
+    export policy_arn=$(aws iam list-policies \
+    --query 'Policies[?PolicyName==`AllowKepimetheus`].Arn' --output text)
+    aws iam detach-user-policy --user-name $service --policy-arn $policy_arn
     
     log "Delete IAM user"
     aws iam delete-user --user-name $service
 
-    log "Delete IAM policy"
-    export policy_arn=$(aws iam list-policies \
-    --query 'Policies[?PolicyName==`AllowKepimetheus`].Arn' --output text)
+    log "Delete IAM policy"    
     aws iam delete-policy --policy-arn $policy_arn
 
 }
