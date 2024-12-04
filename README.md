@@ -1,6 +1,6 @@
 # AWS REINVENT DEMO
 
-This tutorial describes how to setup Kepimetheus for usage within a Kubernetes cluster on AWS using Bedrock. 
+This tutorial describes how to set up Kepimetheus for usage within a Kubernetes cluster on AWS using Bedrock. 
 
 ## Requirements
 
@@ -48,13 +48,15 @@ For this tutorial pourposes you can use [minikube](https://minikube.sigs.k8s.io/
 - See this guide to install [minikube](https://minikube.sigs.k8s.io/docs/start/?arch=/macos/arm64/stable/binary+download).
 - See this guide to install [eksctl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html).
 
+### Option 1: `minikube`
 Provison a simple eks cluster using minikube:
 ```bash
 minikube start
 minikube update-context
 ```
 
-Provison a simple eks cluster using eksctl:
+### Option 2: `AWS EKS`
+Provision a simple eks cluster using eksctl:
 ```bash
 export EKS_CLUSTER_NAME="kepimetheus-cluster"
 export EKS_CLUSTER_REGION="us-east-2"
@@ -98,7 +100,15 @@ EOF
 
 #### Create Kubernetes secret from credentials
 
-This step is opitional and you can create this secret passing your AWS credentials during kepimetheus instalation.
+This step is optional, and you can create this secret passing your AWS credentials during kepimetheus installation.
+
+```bash
+kubectl create secret generic kepimetheus \
+  --namespace ${kepimetheus_NS:-"default"} --from-file ./credentials
+```
+#### Create Kepimetheus plugin configmap 
+
+This step is optional, and you can create this secret passing your AWS credentials during kepimetheus installation.
 
 ```bash
 kubectl create secret generic kepimetheus \
@@ -129,13 +139,19 @@ provider:
 kube-prometheus-stack:
   enabled: true
   grafana:
-    env:
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: kepimetheus
     plugins:
       - https://kepimetheus.s3.us-east-1.amazonaws.com/kepimetheus-1.0.0.zip;kepimetheus
+    extraConfigmapMounts:
+       - name: kepimetheus-configmap
+         mountPath: /etc/grafana/provisioning/plugins/kepimetheus.yaml
+         subPath: kepimetheus.yaml
+         configMap: kepimetheus-configmap
+         readOnly: true
+         optional: false
+
 ```
 
-If you haven't created a secret in a previous step, use this values.yaml:
+If you haven't created a secret in a previous step, use these values.yaml:
 
 ```shell
 provider:
@@ -149,10 +165,16 @@ provider:
 kube-prometheus-stack:
   enabled: true
   grafana:
-    env:
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: kepimetheus
     plugins:
       - https://kepimetheus.s3.us-east-1.amazonaws.com/kepimetheus-1.0.0.zip;kepimetheus
+    extraConfigmapMounts:
+       - name: kepimetheus-configmap
+         mountPath: /etc/grafana/provisioning/plugins/kepimetheus.yaml
+         subPath: kepimetheus.yaml
+         configMap: kepimetheus-configmap
+         readOnly: true
+         optional: false
+
 ```
 
 Add Kepimetheus helm repository:
