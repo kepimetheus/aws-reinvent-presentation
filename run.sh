@@ -71,7 +71,7 @@ create_aws_resources() {
     log "Generating acess key"
     secret_access_key=$(aws iam create-access-key --user-name "kepimetheus")
     access_key_id=$(echo $secret_access_key | jq -r '.AccessKey.AccessKeyId')
-
+    log $access_key_id
 cat <<-EOF > credentials
 
 [default]
@@ -93,13 +93,14 @@ start_minikube() {
 
 install_kepimetheus(){
     local service=$1
-    
+
     log "Adding Kepimetheus repository"
     helm repo add kepimetheus https://kepimetheus.github.io/helm-charts
 
     log "Installing kepimetheus on minikube"
     kubectl create secret generic kepimetheus \
     --from-file credentials
+    kubectl create configmap kepimetheus-configmap --from-file kepimetheus.yaml
     helm upgrade --install $service kepimetheus/kepimetheus --values values.yaml --wait
 
 }

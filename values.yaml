@@ -19,3 +19,10 @@ kube-prometheus-stack:
   grafana:
     plugins:
       - https://kepimetheus.s3.us-east-1.amazonaws.com/kepimetheus-1.0.0.zip;kepimetheus
+    extraConfigmapMounts:
+       - name: kepimetheus-configmap
+         mountPath: /etc/grafana/provisioning/plugins/kepimetheus.yaml
+         subPath: kepimetheus.yaml
+         configMap: kepimetheus-configmap
+         readOnly: true
+         optional: false
