@@ -92,6 +92,8 @@ delete_service() {
     local service=$1
     log "Deleting service $1"
     helm delete $service 2> /dev/null
+    kubectl delete secret kepimetheus 2> /dev/null
+    kubectl delete configmap kepimetheus-configmap 2> /dev/null
     return 0
 }
 
