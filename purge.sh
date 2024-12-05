@@ -20,7 +20,7 @@ delete_service() {
     local service=$1
     
     helm delete $service
-    minikube delete
+    minikube delete --purge
 }
 
 # Criar policy, user e credenciais
