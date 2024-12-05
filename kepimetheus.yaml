@@ -6,6 +6,6 @@ apps:
     org_name: Main Org.
     disabled: false
     jsonData:
-      apiUrl: http://kepimetheus:8000/
+      apiUrl: http://localhost:8000/
     secureJsonData:
       apiKey: secret-key
